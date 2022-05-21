@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "lollevo",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}
