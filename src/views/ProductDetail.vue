@@ -29,36 +29,71 @@
             </div>
         </ion-content>
         <ion-footer class="detail__footer">
-            <button class="deatil__button-add">Agregar al carrito</button>
+            <button class="deatil__button-add" @click="addProductToCart">Agregar al carrito</button>
         </ion-footer>
     </ion-page>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
-import { IonPage, IonHeader, IonFooter, IonToolbar, IonContent, IonButtons, IonButton, IonIcon } from '@ionic/vue';
+import { IonPage, IonHeader, IonFooter, IonToolbar, IonContent, IonButtons, IonButton, IonIcon, alertController } from '@ionic/vue';
 import { arrowBack, heart } from 'ionicons/icons';
 import { useRouter, useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 
 export default  defineComponent({
-  name: 'ProductDetail',
-  components: { IonHeader, IonToolbar, IonContent, IonPage, IonButtons, IonButton, IonIcon, IonFooter },
-  setup() {
-      const router = useRouter()
-      const route = useRoute()
-      const product: any = ref({})
+    name: 'ProductDetail',
+    components: { IonHeader, IonToolbar, IonContent, IonPage, IonButtons, IonButton, IonIcon, IonFooter },
+    setup() {
+        const router = useRouter()
+        const route = useRoute()
+        const store = useStore()
+        const product: any = ref({})
 
-      onMounted(async () => {
-          const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/products/${route.params.id}`
-          const response = await fetch(url)
-          const data = await response.json()          
-          console.log(data)
-          const image = ramdonImage()
-          data.image = image
-          product.value = data
-      })
+        onMounted(async () => {
+            const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/products/${route.params.id}`
+            const response = await fetch(url)
+            const data = await response.json()          
+            console.log(data)
+            const image = ramdonImage()
+            data.image = image
+            product.value = data
+        })
+        const presentAlert = async (m?: string) => {
 
-       const imageIds = [1,2,3,4,5,6,7,8,9,10,12,13,14]
+            const alert = await alertController.create({
+                cssClass: 'product__notificacion',
+                header: 'Notificación',
+                // subHeader: 'Usuario creado',
+                message: 'Producto agregado',
+                buttons: [
+                    {
+                        text: 'Seguir comprando',
+                        role: 'cancel',
+                        cssClass: 'secondary',
+                        handler: () => {
+                            // console.log('Confirm Cancel')
+                        },
+                    },
+                    {
+                        text: 'Ver carrito',
+                        handler: () => {
+                            router.push({
+                                name: 'Cart'
+                            })
+                        },
+                    },
+                ],
+            });
+            await alert.present();
+            const res = await alert.onDidDismiss();
+            console.log(res)
+            // router.push({
+            //     name: 'Login'
+            // })
+        }
+
+        const imageIds = [1,2,3,4,5,6,7,8,9,10,12,13,14]
         const ramdonImage = () => {
             const id = Math.floor(Math.random() * (imageIds.length - 1) + 1)
             const data = { 
@@ -67,15 +102,27 @@ export default  defineComponent({
             return data.name
         } 
 
-      return {
-          router,
-          route,
-          arrowBack,
-          heart,
-          product,
-          ramdonImage
-      }
-  }
+        const addProductToCart = () => {
+            const res = store.commit('addProductToCart', {
+                id: product.value.id,
+                name: product.value.name,
+                price: product.value.price,
+                quantity: 1,
+            })
+
+            presentAlert()
+        }
+
+        return {
+            router,
+            route,
+            arrowBack,
+            heart,
+            product,
+            ramdonImage,
+            addProductToCart
+        }
+    }
 });
 </script>
 <style lang="scss" scoped>
@@ -145,5 +192,8 @@ export default  defineComponent({
     border-radius: 24px;
     background: #33907C;
     color: #fff;
+}
+.product__notificacion {
+
 }
 </style>
