@@ -5,13 +5,14 @@
         </div>
         <div class="product__body">
             <h2 class="product__name">{{ product.name }}</h2>
-            <div class="product__price">{{ product.price }}</div>
+            <div class="product__price">{{ utils.formatPrice(product.price) }}</div>
             <div class="product__add" @click="$router.push({ name: 'ProductDetail', params: { id: product.id } })"> + </div>    
         </div>
     </div>
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
+import utils from '@/utils/index'
 
 export default defineComponent({
     name: 'ProductCard',
@@ -32,7 +33,8 @@ export default defineComponent({
         } 
         
         return {
-            ramdonImage
+            ramdonImage,
+            utils
         }
     },
 })

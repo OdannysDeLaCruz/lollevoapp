@@ -12,6 +12,9 @@
                         <ion-button style="background: #ffffffaa; border-radius: 125px">
                             <ion-icon :icon="heart" style="color: #000000;"/>
                         </ion-button>
+                        <ion-button style="background: #ffffffaa; border-radius: 125px" @click="router.push({ name: 'Cart' })">
+                            <ion-icon :icon="cart" style="color: #000000;"/>
+                        </ion-button>
                     </ion-buttons>
                 </ion-toolbar>
             </ion-header>
@@ -21,7 +24,7 @@
                 </div>
                 <div class="detail__content">
                     <h1 class="detail__name">{{ product.name }}</h1>
-                    <p class="detail__price">${{ product.price }}</p>
+                    <p class="detail__price">{{ utils.formatPrice(product.price) }}</p>
                     <article class="detail__description">
                         {{ product.description }}
                     </article>
@@ -37,9 +40,10 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import { IonPage, IonHeader, IonFooter, IonToolbar, IonContent, IonButtons, IonButton, IonIcon, alertController } from '@ionic/vue';
-import { arrowBack, heart } from 'ionicons/icons';
+import { arrowBack, heart, cart } from 'ionicons/icons';
 import { useRouter, useRoute } from 'vue-router';
 import { useStore } from 'vuex';
+import utils from '@/utils/index'
 
 export default  defineComponent({
     name: 'ProductDetail',
@@ -53,8 +57,7 @@ export default  defineComponent({
         onMounted(async () => {
             const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/products/${route.params.id}`
             const response = await fetch(url)
-            const data = await response.json()          
-            console.log(data)
+            const data = await response.json()  
             const image = ramdonImage()
             data.image = image
             product.value = data
@@ -103,13 +106,13 @@ export default  defineComponent({
         } 
 
         const addProductToCart = () => {
-            const res = store.commit('addProductToCart', {
+            store.commit('addProductToCart', {
                 id: product.value.id,
+                image: product.value.image,
                 name: product.value.name,
                 price: product.value.price,
                 quantity: 1,
             })
-
             presentAlert()
         }
 
@@ -118,7 +121,9 @@ export default  defineComponent({
             route,
             arrowBack,
             heart,
+            cart,
             product,
+            utils,
             ramdonImage,
             addProductToCart
         }
