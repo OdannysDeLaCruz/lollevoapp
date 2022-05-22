@@ -4,43 +4,82 @@
         <span class="form_subtitle">Registra tu cuenta</span>
 
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Primer nombre"></ion-input>
+            <input type="text" class="form__input" placeholder="Primer nombre" v-model="name" />
         </div>
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Apellidos"></ion-input>
+            <input type="text" class="form__input" placeholder="Apellidos" v-model="lastname" />
         </div>
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Email/Número celular"></ion-input>
+            <input type="email" class="form__input" placeholder="Email" v-model="email" />
         </div>
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Contraseña"></ion-input>
+            <input type="password" class="form__input" placeholder="Contraseña" v-model="password" />
         </div>
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Repita contraseña"></ion-input>
+            <input type="password" class="form__input" placeholder="Repita contraseña" v-model="repeatPassword"/>
         </div>
         <div class="form__group">
-            <button class="form__button" expand="full">Crear</button>
+            <button class="form__button" @click="getData()">Crear</button>
         </div>
         <div class="form__group">
-            <a href="#" class="form__link" @click.prevent="router.push({name: 'Login'})">Ya tienes una cuenta ? <strong>Inicia sesión</strong></a>
+            <span class="form__link" @click="router.push({name: 'Login'})">Ya tienes una cuenta ? <strong>Inicia sesión</strong></span>
         </div>
 
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { IonInput } from '@ionic/vue';
+import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default  defineComponent({
-  name: 'FormLogin',
-  components: { IonInput },
-  setup() {
-      const router = useRouter()
+  name: 'FormRegister',
+//   components: {  },
+    setup() {
+        const router = useRouter()
+        const name = ref('')
+        const lastname = ref('')
+        const email = ref('')
+        const password = ref('')
+        const repeatPassword = ref('')
+
+        const onInput = (event: any) => {
+            console.log(event.target)
+        } 
+        const getData = async() => {
+            const data = new FormData()
+            data.append('name', name.value)
+            data.append('email', email.value)
+            data.append('password', password.value)
+
+            const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/users/`
+            const response = await fetch(url, { 
+                method: 'POST',
+                body: data
+            })
+            
+            if(response.status === 201) {
+                await response.json()    
+                router.push({
+                    name: 'Login',
+                    query: {
+                        'isNewCreate': 'true'
+                    }
+                })
+            } else {
+                alert('Ha ocurrido un error, intente de nuevo.')
+            }
+        }
 
       return {
-          router
+          router,
+          name,
+          lastname,
+          email,
+          password,
+          repeatPassword,
+          onInput,
+          getData
       }
   }
 });
@@ -78,13 +117,17 @@ export default  defineComponent({
     margin-bottom: 16px;
 }
 .form__input {
+    background: transparent;
     width: 100%;
     height: 48px;
     border: 1px solid #FFFFFF;
     border-radius: 24px;
-    --color: #fff;
-    --padding-start: 16px;
-    --placeholder-opacity: 1;
+    color: #fff;
+    padding-left: 16px;
+    outline: none;
+}
+.form__input::placeholder {
+    color: #fff;
 }
 .form__button {
     height: 48px;

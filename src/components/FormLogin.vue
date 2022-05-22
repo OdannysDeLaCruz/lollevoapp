@@ -4,13 +4,13 @@
         <span class="form_subtitle">Ingresa a tu cuenta</span>
 
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Email/Número celular"></ion-input>
+            <input type="email" class="form__input" placeholder="Email" v-model="email" />
         </div>
         <div class="form__group">
-            <ion-input class="form__input" placeholder="Contraseña"></ion-input>
+            <input type="password" class="form__input" placeholder="Contraseña" v-model="password" />
         </div>
         <div class="form__group">
-            <button class="form__button" expand="full">Ingresar</button>
+            <button class="form__button" @click="login">Ingresar</button>
         </div>
         <div class="form__group">
             <a href="#" class="form__link" @click.prevent="router.push({name: 'Register'})">No tengo una cuenta? <strong>Registrarse</strong></a>
@@ -19,20 +19,56 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { IonInput } from '@ionic/vue';
+import { defineComponent, ref } from 'vue';
+import { alertController } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
 export default  defineComponent({
-  name: 'FormLogin',
-  components: { IonInput },
-  setup() {
-      const router = useRouter()
+    name: 'FormLogin',
+    setup() {
+        const router = useRouter()
+        const email = ref('')
+        const password = ref('')
 
-      return {
-          router
-      }
-  }
+        const presentAlert = async (m?: string) => {
+            const alert = await alertController.create({
+                cssClass: 'my-custom-class',
+                header: 'Notificación',
+                subHeader: 'Verifique sus datos',
+                message: m,
+                buttons: ['OK'],
+            });
+            await alert.present();
+        }
+
+        const login = async() => {
+            const data = new FormData()
+            data.append('email', email.value)
+            data.append('password', password.value)
+
+            const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/users/login`
+            const response = await fetch(url, { 
+                method: 'POST',
+                body: data
+            })
+            
+            if(response.status === 200) {
+                await response.json()    
+                router.push({
+                    name: 'Market'
+                })
+            } else {
+                presentAlert('Email o contraseña son incorrectos.')
+            }
+        }
+
+        return {
+            router,
+            email,
+            password,
+            login
+        }
+    }
 });
 </script>
 <style lang="scss" scoped>
@@ -68,13 +104,17 @@ export default  defineComponent({
     margin-bottom: 16px;
 }
 .form__input {
+    background: transparent;
     width: 100%;
     height: 48px;
     border: 1px solid #FFFFFF;
     border-radius: 24px;
-    --color: #fff;
-    --padding-start: 16px;
-    --placeholder-opacity: 1;
+    color: #fff;
+    padding-left: 16px;
+    outline: none;
+}
+.form__input::placeholder {
+    color: #fff;
 }
 .form__button {
     height: 48px;

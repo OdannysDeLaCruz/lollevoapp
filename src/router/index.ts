@@ -4,6 +4,10 @@ import TabsPage from '../views/TabsPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/',
+    redirect: '/login'
+  },
+  {
     path: '/home/',
     redirect: '/home/market'
   },
@@ -17,6 +21,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'market',
+        name: 'Market',
         component: () => import('@/views/Home.vue')
       },
       {
@@ -42,6 +47,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/register',
     name: 'Register',
     component: () => import('@/views/Register.vue')
+  },
+  {
+    path: '/category/:category',
+    name: 'Category',
+    component: () => import('@/views/Category.vue')
+  },
+  {
+    path: '/product/:id/detail',
+    name: 'ProductDetail',
+    component: () => import('@/views/ProductDetail.vue')
   }
 ]
 
