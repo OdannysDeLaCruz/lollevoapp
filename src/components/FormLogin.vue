@@ -22,6 +22,7 @@
 import { defineComponent, ref } from 'vue';
 import { alertController } from '@ionic/vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 export default  defineComponent({
     name: 'FormLogin',
@@ -29,6 +30,7 @@ export default  defineComponent({
         const router = useRouter()
         const email = ref('')
         const password = ref('')
+        const store = useStore()
 
         const presentAlert = async (m?: string) => {
             const alert = await alertController.create({
@@ -53,7 +55,8 @@ export default  defineComponent({
             })
             
             if(response.status === 200) {
-                await response.json()    
+                const user = await response.json()
+                store.commit('loginUser', user)
                 router.push({
                     name: 'Market'
                 })

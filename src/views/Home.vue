@@ -3,8 +3,8 @@
         <ion-header class="header">
         <ion-toolbar color="primary" class="header__toolbar header__toolbar--primary">
             <ion-buttons slot="end">
-                <ion-button>
-                    <IconCart />
+                <ion-button @click="router.push({ name: 'Cart' })">
+                    <ion-icon :icon="cart" style="color: #ffffff; font-size: 25px;"/>
                 </ion-button>
             </ion-buttons>
             <ion-title class="header__title">Productos</ion-title>
@@ -36,14 +36,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton } from '@ionic/vue';
-import IconCart from '@/components/icons/IconCart.vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon } from '@ionic/vue';
 import IconSearch from '@/components/icons/IconSearch.vue';
 import { useRouter } from 'vue-router';
+import { cart } from 'ionicons/icons';
 
 export default  defineComponent({
   name: 'HomePage',
-  components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButtons, IonButton, IconCart, IconSearch },
+  components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButtons, IonButton, IconSearch, IonIcon },
   setup() {
       const router = useRouter()
       const categories = [
@@ -58,18 +58,17 @@ export default  defineComponent({
       ]
 
       const renderImage =  (image: string) => {
-
           const data = { 
               name: require('@/assets/category/'+image) 
           }
-
           return data
       }
 
       return {
           router,
           categories,
-          renderImage
+          renderImage,
+          cart
       }
   }
 });
@@ -87,6 +86,7 @@ export default  defineComponent({
 .header__toolbar--secondary {
     --padding-start: 20px;
     --padding-end: 20px;
+    --padding-bottom: 20px;
 }
 .header__title {
     padding: 0px;

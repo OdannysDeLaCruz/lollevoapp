@@ -16,7 +16,7 @@
 
       <div id="container">
         <strong>{{  }}</strong>
-        <p><a href="#" @click.prevent="">Cerrar sesión</a></p>
+        <p><a href="#" @click.prevent="logout">Cerrar sesión</a></p>
       </div>
     </ion-content>
   </ion-page>
@@ -25,10 +25,26 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { IonPage, IonContent } from '@ionic/vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
-  name: 'Tab3Page',
-  components: { IonContent, IonPage }
+    name: 'Tab3Page',
+    components: { IonContent, IonPage },
+    setup() {
+        const store = useStore()
+        const router = useRouter()
+
+        const logout = () => {
+            store.commit('logoutUser', [])    
+            router.push({
+                name: 'Login'
+            })
+        }
+        return {
+            logout
+        }
+    }
 });
 </script>
 <style scoped>

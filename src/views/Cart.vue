@@ -11,32 +11,37 @@
         </ion-toolbar>
         </ion-header>
         <ion-content :fullscreen="true">
-            <div class="content">
-                <div
-                    v-for="product in cart"
-                    :key="product.id"
-                    class="cart__item"
-                >
-                    <div class="cart__wrapper-image">
-                        <img class="cart__item__img" :src="product.image" alt="">
-                    </div>
-                    <div class="cart__item__body">
-                        <span class="cart__item__name">{{ product.name }}</span>
-                        <span class="cart__item__price">{{ utils.formatPrice(product.price) }}</span>
-                        <span class="cart__item__quantity">{{ product.quantity }}</span>
+            <template v-if="cart.length">
+                <div class="content">
+                    <div
+                        v-for="product in cart"
+                        :key="product.id"
+                        class="cart__item"
+                    >
+                        <div class="cart__wrapper-image">
+                            <img class="cart__item__img" :src="product.image" alt="">
+                        </div>
+                        <div class="cart__item__body">
+                            <span class="cart__item__name">{{ product.name }}</span>
+                            <span class="cart__item__price">{{ utils.formatPrice(product.price) }}</span>
+                            <span class="cart__item__quantity">{{ product.quantity }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
+            <template v-else>
+                <div class="cart__empty">Carrito vacío</div>
+            </template>
         </ion-content>
         <ion-footer class="detail__footer">
-            <button class="deatil__button-add" @click="addProductToCart">Ir a pagar</button>
+            <button class="deatil__button-add" @click="createOrder">Ir a pagar</button>
         </ion-footer>
     </ion-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
-import { IonPage, IonHeader, IonToolbar, IonFooter, IonTitle, IonContent, IonButtons, IonButton, IonIcon } from '@ionic/vue';
+import { defineComponent, onMounted, onUpdated, ref } from 'vue';
+import { IonPage, IonHeader, IonToolbar, IonFooter, IonTitle, IonContent, IonButtons, IonButton, IonIcon, alertController } from '@ionic/vue';
 import { arrowBack } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -49,10 +54,13 @@ export default  defineComponent({
         const router = useRouter()
         const store = useStore()
         const cart = ref([])
+        const user:any = ref()
 
         onMounted(async () => {
+            user.value = store.getters.getUser
+        })
+        onUpdated(() => {
             cart.value = store.getters.getCart
-            console.log(cart.value)
         })
 
         const imageIds = [1,2,3,4,5,6,7,8,9,10,12,13,14]
@@ -64,12 +72,82 @@ export default  defineComponent({
             return data.name
         } 
 
+        const presentAlert = async (m?: string) => {
+            const alert = await alertController.create({
+                cssClass: 'my-custom-class',
+                header: 'Notificación',
+                subHeader: 'Pedido creado',
+                message: 'Su pedido ha sido creado',
+                buttons: [
+                    {
+                        text: 'Seguir comprando',
+                        role: 'cancel',
+                        cssClass: 'secondary',
+                        handler: () => {
+                            router.push({
+                                name: 'Market'
+                            })
+                        },
+                    },
+                    {
+                        text: 'Ok',
+                        handler: () => {
+                            // return true
+                        },
+                    },
+                ],
+            });
+            await alert.present();
+        }
+
+        const createOrder = async() => {
+            const user_id = store.getters.getUserId
+
+            // Create order
+            const order = new FormData()
+            order.append('user_id', user_id)
+
+            const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/orders`
+            fetch(url, {
+                method: 'POST',
+                body: order
+            })
+            .then(data => data.json())
+            .then(async (order) => {                
+                if(order.id) {
+                    for(const product of cart.value) {
+                        const url = `${process.env.VUE_APP_API_HOST_LOLLEVO}/orders/details`
+                        const data = new FormData()
+                        data.append('amount', `${(product as any).quantity * (product as any).price}`)
+                        data.append('quantity', (product as any).quantity)
+                        data.append('order_id', order.id)
+                        data.append('product_id', (product as any).id)
+                        
+                        fetch(url, {
+                            method: 'POST',
+                            body: data
+                        }).then(data => data.json())
+                        .then(res => console.log(res))
+                    }
+
+                    cart.value = []
+                    store.commit('clearCart', [])
+                    presentAlert()
+                    // router.push({ name: 'Market' })
+                }  
+            })
+            // const res = await response.json() 
+            // console.log(res.data)
+            
+        }
+
         return {
             router,
             arrowBack,
             cart,
             utils,
-            ramdonImage
+            ramdonImage,
+            createOrder
         }
     }
 });
@@ -89,17 +167,17 @@ export default  defineComponent({
     letter-spacing: 0px;
 }
 .content {
+    // height: 90%;
     padding: 16px;
     margin-top: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
 }
 .cart__item {
     display: flex;
     align-items: center;
-    height: 183px;
+    height: 140px;
     width: 375px;
     margin-bottom: 16px;
     padding: 16px 16px 16px;
@@ -161,5 +239,16 @@ export default  defineComponent({
     border-radius: 24px;
     background: #33907C;
     color: #fff;
+}
+.cart__empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ccc;
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
 }
 </style>
